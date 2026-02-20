@@ -3,10 +3,16 @@ using UnityEngine;
 public class MascotteAutonome : MonoBehaviour
 {
     public Rigidbody rbBallon;
-    public Transform cibleBut;
     public Animator animator;
     public float vitesseCourse = 3.0f;
     
+    [Header("AMÉLIORATION : Cibles Aléatoires")]
+    // Glisse ici tes 3 objets cibles (Gauche, Centre, Droite)
+    public Transform[] ciblesPossibles; 
+
+    [Header("AMÉLIORATION : Puissance")]
+    public float forceInitiale = 18f;
+
     private bool enTrainDeCourir = false;
     private Vector3 positionDepartNaruto;
 
@@ -47,7 +53,15 @@ public class MascotteAutonome : MonoBehaviour
     void AppliquerForceBallon()
     {
         rbBallon.isKinematic = false;
-        Vector3 direction = (cibleBut.position - rbBallon.transform.position).normalized;
-        rbBallon.AddForce(direction * 22f, ForceMode.Impulse);
+        
+        // 1. Choisir une cible au hasard
+        int index = Random.Range(0, ciblesPossibles.Length);
+        Transform cibleChoisie = ciblesPossibles[index];
+
+        // 2. Calculer la force progressive (plus on avance dans les tirs, plus c'est fort)
+        float forceActuelle = forceInitiale + (GameManager.Instance.tirsEffectues * 3f);
+
+        Vector3 direction = (cibleChoisie.position - rbBallon.transform.position).normalized;
+        rbBallon.AddForce(direction * forceActuelle, ForceMode.Impulse);
     }
 }

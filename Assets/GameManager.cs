@@ -9,9 +9,18 @@ public class GameManager : MonoBehaviour
 
     [Header("Configuration")]
     public int scoreObjectif = 1000;
-    private int tirsEffectues = 0;
+    // CHANGEMENT : 'public' pour que Naruto puisse lire le numéro du tir
+    public int tirsEffectues = 0; 
     private int scoreTotal = 0;
     private bool dernierTirArrete = false;
+
+    private string[] questionsFoot = {
+        "Le PSG a-t-il gagné la LDC ?",
+        "Y a-t-il 11 joueurs par équipe ?",
+        "Mbappé joue-t-il au Real Madrid ?",
+        "La France a-t-elle 2 étoiles ?",
+        "Le gardien peut-il toucher le ballon à la main ?"
+    };
 
     [Header("UI Interne")]
     private GameObject canvasQuiz;
@@ -36,16 +45,25 @@ public class GameManager : MonoBehaviour
     IEnumerator PauseAvantQuestion()
     {
         yield return new WaitForSeconds(1.0f);
-        canvasQuiz.SetActive(true);
-        texteQuestion.text = "Tir n°" + (tirsEffectues + 1) + " terminé.\nVoulez-vous doubler vos points ?";
+        
+        // On force la vérification pour éviter le "Figeage"
+        if (questionsFoot != null && questionsFoot.Length > 0)
+        {
+            canvasQuiz.SetActive(true);
+            int indexAleatoire = Random.Range(0, questionsFoot.Length);
+            texteQuestion.text = questionsFoot[indexAleatoire];
+        }
+        else
+        {
+            // Sécurité : si le tableau est vide, on affiche un texte par défaut au lieu de planter
+            canvasQuiz.SetActive(true);
+            texteQuestion.text = "Bien joué ! On double les points ?";
+        }
     }
 
     public void ValiderReponse(bool bonneReponse)
     {
-        if (bonneReponse && dernierTirArrete)
-        {
-            scoreTotal += 400; // Bonus pour faire 800 total (400 arrêt + 400 bonus)
-        }
+        if (bonneReponse && dernierTirArrete) scoreTotal += 400;
 
         canvasQuiz.SetActive(false);
         tirsEffectues++;
@@ -61,7 +79,8 @@ public class GameManager : MonoBehaviour
         if (tm != null) tm.ReplacerBallon();
 
         MascotteAutonome naruto = FindObjectOfType<MascotteAutonome>();
-        if (naruto != null) naruto.Invoke("DemarrerCourse", 0.5f);
+        // AMÉLIORATION : Délai de 2 secondes avant que Naruto ne reparte
+        if (naruto != null) naruto.Invoke("DemarrerCourse", 2.0f);
     }
 
     void TerminerJeu()
@@ -69,7 +88,27 @@ public class GameManager : MonoBehaviour
         canvasQuiz.SetActive(true);
         string message = scoreTotal >= scoreObjectif ? "GAGNÉ !" : "PERDU...";
         texteQuestion.text = message + "\nScore Final : " + scoreTotal;
+        
+        // On cache les boutons Vrai/Faux actuels
         foreach(Button b in canvasQuiz.GetComponentsInChildren<Button>()) b.gameObject.SetActive(false);
+
+        // On crée le bouton Recommencer
+        CreerBouton(canvasQuiz.transform.GetChild(0), "REJOUER", new Vector2(-150, -150), () => RecommencerPartie(), Color.blue);
+        
+        // On crée le bouton Quitter
+        CreerBouton(canvasQuiz.transform.GetChild(0), "QUITTER", new Vector2(150, -150), () => QuitterJeu(), Color.gray);
+    }
+
+    public void RecommencerPartie()
+    {
+        // Recharge la scène actuelle pour tout remettre à zéro
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+    }
+
+    public void QuitterJeu()
+    {
+        Debug.Log("Le jeu se ferme...");
+        Application.Quit(); // Ferme l'application (ne marche que dans le build final)
     }
 
     void MettreAJourUI()
@@ -95,16 +134,6 @@ public class GameManager : MonoBehaviour
         rtFond.sizeDelta = new Vector2(800, 500);
         rtFond.anchoredPosition = Vector2.zero;
 
-        GameObject scoreGo = new GameObject("ScoreTxt");
-        scoreGo.transform.SetParent(fond.transform);
-        texteScoreUI = scoreGo.AddComponent<TextMeshProUGUI>();
-        texteScoreUI.fontSize = 30;
-        texteScoreUI.alignment = TextAlignmentOptions.Center;
-        RectTransform rtS = scoreGo.GetComponent<RectTransform>();
-        rtS.anchorMin = rtS.anchorMax = new Vector2(0.5f, 1f);
-        rtS.sizeDelta = new Vector2(600, 50);
-        rtS.anchoredPosition = new Vector2(0, -50);
-
         GameObject qGo = new GameObject("QuestionTxt");
         qGo.transform.SetParent(fond.transform);
         texteQuestion = qGo.AddComponent<TextMeshProUGUI>();
@@ -115,8 +144,18 @@ public class GameManager : MonoBehaviour
         rtQ.sizeDelta = new Vector2(700, 150);
         rtQ.anchoredPosition = new Vector2(0, 50);
 
-        CreerBouton(fond.transform, "OUI", new Vector2(-150, -100), () => ValiderReponse(true), Color.green);
-        CreerBouton(fond.transform, "NON", new Vector2(150, -100), () => ValiderReponse(false), Color.red);
+        GameObject scoreGo = new GameObject("ScoreTxt");
+        scoreGo.transform.SetParent(fond.transform);
+        texteScoreUI = scoreGo.AddComponent<TextMeshProUGUI>();
+        texteScoreUI.fontSize = 30;
+        texteScoreUI.alignment = TextAlignmentOptions.Center;
+        RectTransform rtS = scoreGo.GetComponent<RectTransform>();
+        rtS.anchorMin = rtS.anchorMax = new Vector2(0.5f, 1f);
+        rtS.sizeDelta = new Vector2(600, 50);
+        rtS.anchoredPosition = new Vector2(0, -50);
+
+        CreerBouton(fond.transform, "VRAI", new Vector2(-150, -100), () => ValiderReponse(true), Color.green);
+        CreerBouton(fond.transform, "FAUX", new Vector2(150, -100), () => ValiderReponse(false), Color.red);
         canvasQuiz.SetActive(false);
     }
 
