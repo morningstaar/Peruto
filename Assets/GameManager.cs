@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -89,13 +90,16 @@ public class GameManager : MonoBehaviour
         string message = scoreTotal >= scoreObjectif ? "GAGNÉ !" : "PERDU...";
         texteQuestion.text = message + "\nScore Final : " + scoreTotal;
         
-        // On cache les boutons Vrai/Faux actuels
-        foreach(Button b in canvasQuiz.GetComponentsInChildren<Button>()) b.gameObject.SetActive(false);
+        // 1. On cache les boutons VRAI/FAUX
+        foreach(Button b in canvasQuiz.GetComponentsInChildren<Button>()) 
+        {
+            b.gameObject.SetActive(false);
+        }
 
-        // On crée le bouton Recommencer
+        // 2. On crée le bouton REJOUER (en bleu)
         CreerBouton(canvasQuiz.transform.GetChild(0), "REJOUER", new Vector2(-150, -150), () => RecommencerPartie(), Color.blue);
         
-        // On crée le bouton Quitter
+        // 3. On crée le bouton QUITTER (en gris)
         CreerBouton(canvasQuiz.transform.GetChild(0), "QUITTER", new Vector2(150, -150), () => QuitterJeu(), Color.gray);
     }
 

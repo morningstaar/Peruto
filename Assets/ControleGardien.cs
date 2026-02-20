@@ -3,13 +3,23 @@ using UnityEngine;
 public class ControleGardien : MonoBehaviour
 {
     public float vitesse = 15f;
+    
+    [Header("Limites du But (Axe Z)")]
+    public float limiteMinimum = 0.05f;
+    public float limiteMaximum = -0.05f;
 
     void Update()
     {
-        // On récupère les touches Gauche/Droite ou Q/D
-        float mouvement = Input.GetAxis("Horizontal") * vitesse * Time.deltaTime;
+        // 1. On récupère l'entrée (Flèches Gauche/Droite ou Q/D)
+        float mouvement = -Input.GetAxis("Horizontal") * vitesse * Time.deltaTime;
         
-        // IMPORTANT : On déplace sur l'axe X pour glisser devant le but
-        transform.Translate(mouvement, 0, 0);
+        // 2. On calcule la nouvelle position théorique sur l'axe Z
+        float nouvellePositionZ = transform.position.z + mouvement;
+
+        // 3. On bloque la position entre les poteaux
+        nouvellePositionZ = Mathf.Clamp(nouvellePositionZ, limiteMinimum, limiteMaximum);
+
+        // 4. On applique la position (X et Y restent fixes, seul Z change)
+        transform.position = new Vector3(transform.position.x, transform.position.y, nouvellePositionZ);
     }
 }
