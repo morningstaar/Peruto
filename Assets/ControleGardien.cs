@@ -19,7 +19,6 @@ public class ControleGardien : MonoBehaviour
         float nouvellePositionZ = transform.position.z + mouvement;
 
         // 3. On bloque la position entre tes limites
-        // IMPORTANT : limiteMinimum doit être plus petit que limiteMaximum
         nouvellePositionZ = Mathf.Clamp(nouvellePositionZ, limiteMinimum, limiteMaximum);
 
         // 4. On applique la position bloquée (X et Y restent identiques)

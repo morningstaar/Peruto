@@ -11,8 +11,8 @@ public class MascotteAutonome : MonoBehaviour
     public float forceInitiale = 18f;
 
     [Header("Réglages Timing (IMPORTANT)")]
-    public float distanceDeTir = 1.1f; // Réglage conseillé : 1.1
-    public float delaiImpactBalle = 0.35f; // Réglage conseillé : 0.35
+    public float distanceDeTir = 1.1f; 
+    public float delaiImpactBalle = 0.35f; 
 
     private bool enTrainDeCourir = false;
     private Vector3 positionDepartNaruto;
